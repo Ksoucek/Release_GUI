@@ -1,0 +1,16 @@
+{
+    "$TaskName": "Release Verze 34",
+    "$TaskTime": "16:00",
+    "$ReleasedFeatures": "\u010c\u00edslo po\u017e.\tN\u00e1zev po\u017eadavku\n7444\tBC - Prodejn\u00ed faktury generovan\u00e9 ze smluv - popise\n7494\tBC - storno polo\u017eek DM (odpisy) a dopln\u011bn\u00ed k\u00f3du partnera transakce\n7514\tBC - MO - V\u00fdchoz\u00ed hodnota p\u0159ijmout u mo\u017enost\u00ed \u00fa\u010dtov\u00e1n\u00ed n\u00e1kupn\u00edch objedn\u00e1vek\n7509\tnelze tisknout prodejn\u00ed faktury, kter\u00e9 nemaj\u00ed vypln\u011bn\u00e9 centrum odpov\u011bdnosti, chyba v p\u0159\u00edloze\n7314\tBC - automatick\u00e9 generov\u00e1n\u00ed n\u00e1kupn\u00edch faktur ze smluv\n7215\tBC - objedn\u00e1vky BC dopln\u011bn\u00ed z\u016fstatku\n\n",
+    "$EmailFrom": "jakub.soucek@navitec.cz",
+    "$EmailFromPW": "scdcxwrwygwmsvbv",
+    "$EmailTo": "jakub.soucek@navitec.cz",
+    "$Subject": "Release verze 34 do vyvojov\u00e9ho  prost\u0159ed\u00ed",
+    "$SubjectFinish": " - hotovo",
+    "$Body": "Dobry den, \n Dnes od $TaskTime probehne release do Vyvojoveho prostredi. Nasazeny budou upravy : \n $ReleasedFeatures\n\n\n\n",
+    "$BodyFinish": "Dobry den, \n Release probehl uspesne.",
+    "$DeploymentInstance": "bc-test",
+    "$SentEmailBefore": false,
+    "$SentEmailAfter": false,
+    "$UserID": "navitec\\jakub.soucek"
+}
