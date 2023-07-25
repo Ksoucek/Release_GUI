@@ -1,12 +1,11 @@
 import json
-import os
+import ctypes
 import tkinter as Tk
 from tkinter import ttk
 from tkinter import scrolledtext
-from typing import Self
-import ctypes
+#Import modulů
 
-
+#definice akcí
 def UnscheduleTask(command):
     result = ctypes.windll.shell32.ShellExecuteW(
         None, "runas", "powershell", command, None, 0)
@@ -20,7 +19,7 @@ def ScheduleTask(command):
     if result <= 32:
         raise Exception("Failed to run as admin")
 
-#code
+#Uložení dat do jsonu
 def enter_data():
     Instance = Deployment_Instance_entry.get()
     TaskTime = task_time_entry.get()
@@ -72,7 +71,8 @@ def enter_data():
 window = Tk.Tk()
 window.title("Nastavení parametrů releasu")
 
-#NAČTE PŮVODNÍ DATA
+#Načtení dat  do proměných z JSONu
+
 PATH_TO_JSON: str = r'C:\NTC\Settings.JSON'
 with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
     json_content = json.load(f)
@@ -94,11 +94,10 @@ with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
     OldSendEmailToMyself : str =   json_content['$SendEmailToMyself'] 
 
 
-
-
+#vytvoření okno prostředí
 frame = Tk.Frame(window)
 frame.pack()
-
+#definice proměnných
 OldString1 = Tk.StringVar()
 Oldstring2 = Tk.StringVar()
 OldString3 = Tk.StringVar()
@@ -110,7 +109,7 @@ OldString8 = Tk.StringVar()
 OldString9 = Tk.StringVar()
 OldString10 = Tk.StringVar()
 
-# Saving User Info
+# Nastavení releaseu
 System_Frame =Tk.LabelFrame(frame, text="Release nastavení")
 System_Frame.grid(row= 0, column=0, padx=20, pady=10)
 
@@ -143,12 +142,9 @@ TaskName_entry.grid(row=1, column=3)
 for widget in System_Frame.winfo_children():
     widget.grid_configure(padx=10, pady=10)
 
-# Email
-Email_Frame = Tk.LabelFrame(frame, text="Nasatvení emailů k releasu")
+# Nastavení Email
+Email_Frame = Tk.LabelFrame(frame, text="Nastavení emailů k releasu")
 Email_Frame.grid(row=2, column=0, padx=20, pady=15)
-
-
-
 
 NewEmailBoolBefore = Tk.StringVar()
 Sent_before_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email před nasazením.",
@@ -160,8 +156,6 @@ if OldEmailBoolBefore :
 else:
     Sent_before_entry.deselect()
 
-
-
 NewEmailBoolAfter = Tk.StringVar()
 Sent_After_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email po nasazení.",
                                   variable=NewEmailBoolAfter, onvalue="true", offvalue="false")
@@ -171,8 +165,6 @@ if OldEmailBoolAfter :
     Sent_After_entry.select()
 else:
     Sent_After_entry.deselect()
-
-
 
 
 OldString4.set(OldEmailFrom)
@@ -241,7 +233,7 @@ ReleasedFeatures_entry = scrolledtext.ScrolledText(Email_Frame,
 ReleasedFeatures_entry.insert(Tk.INSERT,OldString10.get())
 ReleasedFeatures_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3,rowspan=5)
 
-# Button
+# tlačítka a akce
 button1 = Tk.Button(frame, text="Uložit JSON", command= enter_data)
 button1.grid(row=16, column=0, sticky="news", padx=20, pady=10)
 
