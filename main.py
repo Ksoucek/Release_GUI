@@ -20,11 +20,7 @@ def ScheduleTask(command):
     if result <= 32:
         raise Exception("Failed to run as admin")
 
-
-
-
 #code
-
 def enter_data():
     Instance = Deployment_Instance_entry.get()
     TaskTime = task_time_entry.get()
@@ -92,10 +88,10 @@ with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
     OldBody : str =   json_content['$Body']
     OldBodyFinish : str =   json_content['$BodyFinish']
     OldDeploymentInstance = json_content['$DeploymentInstance']
-    OldEmailBoolBefore : str =   json_content['$SentEmailBefore']
-    OldEmailBoolAfter : str =   json_content['$SentEmailAfter']
+    OldEmailBoolBefore : str =   json_content['$SentEmailBefore'] 
+    OldEmailBoolAfter : str =   json_content['$SentEmailAfter'] 
     OldUserID : str =   json_content['$UserID']
-    OldSendEmailToMyself : str =   json_content['$SendEmailToMyself']
+    OldSendEmailToMyself : str =   json_content['$SendEmailToMyself'] 
 
 
 
@@ -159,7 +155,7 @@ Sent_before_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email před nasaz
                                   variable=NewEmailBoolBefore, onvalue="true", offvalue="false")
 Sent_before_entry.grid(row=0, column=0)
 
-if OldEmailBoolBefore == 'true' :
+if OldEmailBoolBefore :
     Sent_before_entry.select()
 else:
     Sent_before_entry.deselect()
@@ -171,7 +167,7 @@ Sent_After_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email po nasazení
                                   variable=NewEmailBoolAfter, onvalue="true", offvalue="false")
 Sent_After_entry.grid(row=0, column=2)
 
-if OldEmailBoolAfter == 'true' :
+if OldEmailBoolAfter :
     Sent_After_entry.select()
 else:
     Sent_After_entry.deselect()
@@ -197,7 +193,7 @@ SendEmailToMyself_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat emaily jen 
                                   variable=NewSendEmailToMyself, onvalue="true", offvalue="false")
 SendEmailToMyself_entry.grid(row=3, column=2)
 
-if OldSendEmailToMyself == 'true' :
+if OldSendEmailToMyself  :
     SendEmailToMyself_entry.select()
 else:
     SendEmailToMyself_entry.deselect()
