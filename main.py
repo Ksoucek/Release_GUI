@@ -12,15 +12,15 @@ def UnscheduleTask(command):
         None, "runas", "powershell", command, None, 0)
     if result <= 32:
         raise Exception("Failed to run as admin")
-    
+
 
 def ScheduleTask(command):
     result = ctypes.windll.shell32.ShellExecuteW(
         None, "runas", "powershell", command, None, 0)
     if result <= 32:
         raise Exception("Failed to run as admin")
-    
-    
+
+
 
 
 #code
@@ -37,10 +37,12 @@ def enter_data():
     EmailFrom = Email_From_entry.get()
     EmailFromPW = AplicationPW_Entry.get()
     EmailTo = Email_to_Entry.get("1.0",'end-1c')
+    SendEmailToMyself = NewSendEmailToMyself.get() in ("true", "False")
+
 
     Subject = Subject_entry.get()
     Body = Body_entry.get("1.0",'end')
-    ReleasedFeatures = ReleasedFeatures_entry.get("1.0",'end')
+    ReleasedFeatures = ReleasedFeatures_entry.get("1.0",'end-1c')
 
     if Instance and TaskTime:
         PATH_TO_JSON: str = r'C:\NTC\Settings.JSON'
@@ -51,12 +53,13 @@ def enter_data():
          json_content['$UserID'] = UserID
          json_content['$TaskName'] = TaskName
 
-         json_content['$SentEmailBefore'] =  EmailBoolBeforestr 
+         json_content['$SentEmailBefore'] =  EmailBoolBeforestr
          json_content['$SentEmailAfter'] = EmailBoolAfterstr
 
          json_content['$EmailFrom'] = EmailFrom
          json_content['$EmailFromPW'] = EmailFromPW
          json_content['$EmailTo'] = EmailTo
+         json_content['$SendEmailToMyself'] = SendEmailToMyself
 
          json_content['$Subject'] = Subject
          json_content['$Body'] = Body
@@ -67,7 +70,7 @@ def enter_data():
 
     else:
         Tk.messagebox.showwarning(title="Error", message="Instance a čas jsou povinné údaje.")
-        
+
 
 
 window = Tk.Tk()
@@ -78,22 +81,23 @@ PATH_TO_JSON: str = r'C:\NTC\Settings.JSON'
 with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
     json_content = json.load(f)
 
-    OldTaskName = json_content['$TaskName'] 
-    OldTaskTime =   json_content['$TaskTime'] 
-    OldReleasedFeatures =   json_content['$ReleasedFeatures'] 
-    OldEmailFrom : str =   json_content['$EmailFrom'] 
-    OldEmailFromPW : str =   json_content['$EmailFromPW'] 
-    OldEmailTo : str =   json_content['$EmailTo'] 
-    OldSubject : str =   json_content['$Subject'] 
-    OldSubjectFinish : str =   json_content['$SubjectFinish'] 
-    OldBody : str =   json_content['$Body'] 
-    OldBodyFinish : str =   json_content['$BodyFinish'] 
-    OldDeploymentInstance = json_content['$DeploymentInstance'] 
-    OldEmailBoolBefore : str =   json_content['$SentEmailBefore'] 
-    OldEmailBoolAfter : str =   json_content['$SentEmailAfter'] 
-    OldUserID : str =   json_content['$UserID'] 
+    OldTaskName = json_content['$TaskName']
+    OldTaskTime =   json_content['$TaskTime']
+    OldReleasedFeatures =   json_content['$ReleasedFeatures']
+    OldEmailFrom : str =   json_content['$EmailFrom']
+    OldEmailFromPW : str =   json_content['$EmailFromPW']
+    OldEmailTo : str =   json_content['$EmailTo']
+    OldSubject : str =   json_content['$Subject']
+    OldSubjectFinish : str =   json_content['$SubjectFinish']
+    OldBody : str =   json_content['$Body']
+    OldBodyFinish : str =   json_content['$BodyFinish']
+    OldDeploymentInstance = json_content['$DeploymentInstance']
+    OldEmailBoolBefore : str =   json_content['$SentEmailBefore']
+    OldEmailBoolAfter : str =   json_content['$SentEmailAfter']
+    OldUserID : str =   json_content['$UserID']
+    OldSendEmailToMyself : str =   json_content['$SendEmailToMyself']
 
-  
+
 
 
 frame = Tk.Frame(window)
@@ -188,18 +192,23 @@ AplicationPW.grid(row=2, column=1)
 AplicationPW_Entry.grid(row=3, column=1)
 
 
-nationality_label = Tk.Label(Email_Frame, text="Odeslat email")
-nationality_combobox = ttk.Combobox(Email_Frame, values=["Jen Sobě", "Na seznam příjemců"])
-nationality_label.grid(row=2, column=2)
-nationality_combobox.grid(row=3, column=2)
+NewSendEmailToMyself = Tk.StringVar()
+SendEmailToMyself_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat emaily jen sobě",
+                                  variable=NewSendEmailToMyself, onvalue="true", offvalue="false")
+SendEmailToMyself_entry.grid(row=3, column=2)
+
+if OldSendEmailToMyself == 'true' :
+    SendEmailToMyself_entry.select()
+else:
+    SendEmailToMyself_entry.deselect()
 
 OldString7.set(OldEmailTo)
 OldEmailTo = Tk.Label(Email_Frame, text="Seznam příjemců")
 OldEmailTo.grid(row=6, column=1, sticky='we')
-Email_to_Entry = scrolledtext.ScrolledText(Email_Frame, 
-                                      wrap = Tk.WORD, 
-                                      width = 170, 
-                                      height = 1, 
+Email_to_Entry = scrolledtext.ScrolledText(Email_Frame,
+                                      wrap = Tk.WORD,
+                                      width = 170,
+                                      height = 1,
                                       font = ("Times New Roman",
                                               10))
 Email_to_Entry.insert(Tk.INSERT,OldString7.get())
@@ -215,10 +224,10 @@ Subject_entry.grid(row=5, column=0,sticky='nsew', padx = 10, pady=10, columnspan
 OldString9.set(OldBody)
 OldBody = Tk.Label(Email_Frame, text="Tělo Mailu")
 OldBody.grid(row=8, column=1, sticky='we')
-Body_entry = scrolledtext.ScrolledText(Email_Frame, 
-                                      wrap = Tk.WORD, 
-                                      width = 170, 
-                                      height = 1, 
+Body_entry = scrolledtext.ScrolledText(Email_Frame,
+                                      wrap = Tk.WORD,
+                                      width = 170,
+                                      height = 1,
                                       font = ("Times New Roman",
                                               10))
 Body_entry.insert(Tk.INSERT,OldString9.get())
@@ -227,10 +236,10 @@ Body_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3)
 OldString10.set(OldReleasedFeatures)
 OldReleasedFeatures = Tk.Label(Email_Frame, text="Seznam Požadavků")
 OldReleasedFeatures.grid(row=10, column=1, sticky='we',rowspan=5)
-ReleasedFeatures_entry = scrolledtext.ScrolledText(Email_Frame, 
-                                      wrap = Tk.WORD, 
-                                      width = 170, 
-                                      height = 1, 
+ReleasedFeatures_entry = scrolledtext.ScrolledText(Email_Frame,
+                                      wrap = Tk.WORD,
+                                      width = 170,
+                                      height = 1,
                                       font = ("Times New Roman",
                                               10))
 ReleasedFeatures_entry.insert(Tk.INSERT,OldString10.get())

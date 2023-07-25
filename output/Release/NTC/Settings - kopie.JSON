@@ -1,0 +1,16 @@
+{
+    "$TaskName": "Release Verze 34",
+    "$TaskTime": "16:00",
+    "$ReleasedFeatures": "CDR7494 BC  storno polozek DM a doplneni kodu partnera transakce \n CDR7314 BC automaticke generovani nakupnich faktur ze smluv \n CDR7509 nelze tisknout prodejni faktury ktere nemaji vyplnene centrum odpovednosti chyba v priloze \n CDR7514 BC  MO  Vychozi hodnota prijmout u moznosti uctovani nakupnich objednavek \n CDR7215 BC  objednavky BC doplneni zustatku \n CDR7444 BC  Prodejni faktury generovane ze smluv  popise",
+    "$EmailFrom": "jakub.soucek@navitec.cz",
+    "$EmailFromPW": "scdcxwrwygwmsvbv",
+    "$EmailTo": "jakub.soucek@navitec.cz",
+    "$Subject": "Release verze 34 do vyvojov\u00e9ho  prost\u0159ed\u00ed",
+    "$SubjectFinish": " - hotovo",
+    "$Body": "Dobry den, \n Dnes od $TaskTime probehne release do Vyvojoveho prostredi. Nasazeny budou upravy : \n $ReleasedFeatures\n\n\n",
+    "$BodyFinish": "Dobry den, \n Release probehl uspesne.",
+    "$DeploymentInstance": "bc-test",
+    "$SentEmailBefore": false,
+    "$SentEmailAfter": false,
+    "$UserID": "navitec\\jakub.soucek"
+}
