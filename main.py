@@ -3,8 +3,25 @@ import os
 import tkinter as Tk
 from tkinter import ttk
 from tkinter import scrolledtext
-  
 from typing import Self
+import ctypes
+
+
+def UnscheduleTask(command):
+    result = ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", "powershell", command, None, 0)
+    if result <= 32:
+        raise Exception("Failed to run as admin")
+    
+
+def ScheduleTask(command):
+    result = ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", "powershell", command, None, 0)
+    if result <= 32:
+        raise Exception("Failed to run as admin")
+    
+    
+
 
 #code
 
@@ -220,6 +237,12 @@ ReleasedFeatures_entry.insert(Tk.INSERT,OldString10.get())
 ReleasedFeatures_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3,rowspan=5)
 
 # Button
-button = Tk.Button(frame, text="Uložit JSON", command= enter_data)
-button.grid(row=16, column=0, sticky="news", padx=20, pady=10)
+button1 = Tk.Button(frame, text="Uložit JSON", command= enter_data)
+button1.grid(row=16, column=0, sticky="news", padx=20, pady=10)
+
+button2 = Tk.Button(frame, text="Spustit timer ", command= lambda : ScheduleTask("C:\\NTC\\ScheduledTaskRealease.ps1"))
+button2.grid(row=18, column=0, sticky="news", padx=20, pady=10)
+
+button3 = Tk.Button(frame, text="Zrušit timer ", command=  lambda : UnscheduleTask("C:\\NTC\\UnscheduleTask.ps1"))
+button3.grid(row=20, column=0, sticky="news", padx=20, pady=10)
 window.mainloop()
