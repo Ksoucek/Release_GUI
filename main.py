@@ -117,7 +117,7 @@ System_Frame.grid(row= 0, column=0, padx=20, pady=10)
 OldString1.set(OldDeploymentInstance)
 Deployment_Instance = Tk.Label(System_Frame, text="Deployment Instance")
 Deployment_Instance.grid(row=0, column=0)
-Deployment_Instance_entry = ttk.Combobox(System_Frame, values=["SSC_ADM", "bc-test","SSC175"],textvariable = OldString1)
+Deployment_Instance_entry = ttk.Combobox(System_Frame, values=["AUSTISBC", "BC170"],textvariable = OldString1)
 Deployment_Instance_entry.grid(row=1, column=0)
 
 Oldstring2.set(OldTaskTime)
@@ -237,7 +237,7 @@ ReleasedFeatures_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columns
 button1 = Tk.Button(frame, text="Uložit JSON", command= enter_data)
 button1.grid(row=16, column=0, sticky="news", padx=20, pady=10)
 
-button2 = Tk.Button(frame, text="Spustit timer ", command= lambda : ScheduleTask("C:\\NTC\\ScheduledTaskRealease.ps1"))
+button2 = Tk.Button(frame, text="Spustit timer ", command= lambda : ScheduleTask("C:\\NTC\\ScheduledTaskRealeaseAus.ps1"))
 button2.grid(row=18, column=0, sticky="news", padx=20, pady=10)
 
 button3 = Tk.Button(frame, text="Zrušit timer ", command=  lambda : UnscheduleTask("C:\\NTC\\UnscheduleTask.ps1"))
