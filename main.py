@@ -117,7 +117,7 @@ System_Frame.grid(row= 0, column=0, padx=20, pady=10)
 OldString1.set(OldDeploymentInstance)
 Deployment_Instance = Tk.Label(System_Frame, text="Deployment Instance")
 Deployment_Instance.grid(row=0, column=0)
-Deployment_Instance_entry = ttk.Combobox(System_Frame, values=["AUSTISBC", "BC170"],textvariable = OldString1)
+Deployment_Instance_entry = ttk.Combobox(System_Frame, values=["AustisRealeaseService", "AustisTest"],textvariable = OldString1)
 Deployment_Instance_entry.grid(row=1, column=0)
 
 Oldstring2.set(OldTaskTime)
