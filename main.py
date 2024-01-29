@@ -15,6 +15,11 @@ def UnscheduleTask(command):
         None, "runas", "powershell", command, None, 0)
     if result <= 32:
         raise Exception("Failed to run as admin")
+def RunTaskNow(command):
+    result = ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", "powershell", command, None, 0)
+    if result <= 32:
+        raise Exception("Failed to run as admin")
 
 
 def ScheduleTask(command):
@@ -249,6 +254,9 @@ button2.grid(row=20, column=0, sticky="news", padx=20, pady=10)
 
 button3 = Tk.Button(frame, text="Zrušit timer ", command=  lambda : UnscheduleTask("C:\\NTC\\UnscheduleTask.ps1"))
 button3.grid(row=22, column=0, sticky="news", padx=20, pady=10)
+
+button5 = Tk.Button(frame, text="Spustit release hned ", command=  lambda : RunTaskNow("C:\\NTC\\ReleaseAndNotificationNow.ps1"))
+button5.grid(row=24, column=0, sticky="news", padx=20, pady=10)
 
 
 window.mainloop()
