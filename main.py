@@ -7,6 +7,19 @@ from tkinter import scrolledtext
 #Import modulů
 
 #definice akcí
+def run_powershell_script(script_path):
+    try:
+        # Construct the command to run the PowerShell script
+        command = ["pwsh", "-File", script_path]
+        
+        # Execute the command
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        
+        # Return the output and error (if any)
+        return result.stdout, result.stderr
+    except subprocess.CalledProcessError as e:
+        return e.stdout, e.stderr
+    
 def OpenJson(Path):
     subprocess.call(['notepad.exe', Path])
     
@@ -34,6 +47,7 @@ def enter_data():
     TaskTime = task_time_entry.get()
     UserID = user_id_entry.get()
     TaskName = TaskName_entry.get()
+    BoolDependentAppExist = Newdependent_app_exist.get()
 
     EmailBoolBeforestr = NewEmailBoolBefore.get() in ("true", "False")
     EmailBoolAfterstr = NewEmailBoolAfter.get() in ("true", "False")
@@ -56,6 +70,7 @@ def enter_data():
          json_content['$TaskTime'] = TaskTime
          json_content['$UserID'] = UserID
          json_content['$TaskName'] = TaskName
+         json_content['$DependentAppExist'] = int(BoolDependentAppExist)
 
          json_content['$SentEmailBefore'] =  EmailBoolBeforestr
          json_content['$SentEmailAfter'] = EmailBoolAfterstr
@@ -101,6 +116,7 @@ with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
     OldEmailBoolAfter : str =   json_content['$SentEmailAfter'] 
     OldUserID : str =   json_content['$UserID']
     OldSendEmailToMyself : str =   json_content['$SendEmailToMyself'] 
+    OldDependentAppExist : str =   json_content['$DependentAppExist'] 
 
 
 #vytvoření okno prostředí
@@ -117,6 +133,7 @@ OldString7 = Tk.StringVar()
 OldString8 = Tk.StringVar()
 OldString9 = Tk.StringVar()
 OldString10 = Tk.StringVar()
+OldString11 = Tk.StringVar()
 
 # Nastavení releaseu
 System_Frame =Tk.LabelFrame(frame, text="Release nastavení")
@@ -147,6 +164,15 @@ TaskNameLbl.grid(row=0, column=3)
 TaskName_entry = Tk.Entry(System_Frame,textvariable = OldString6)
 TaskName_entry.grid(row=1, column=3)
 
+Newdependent_app_exist = Tk.BooleanVar()
+dependent_app_Entry = Tk.Checkbutton(System_Frame, text= "Závislá aplikace",
+                                  variable=Newdependent_app_exist, onvalue=True, offvalue=False,command=enter_data)
+dependent_app_Entry.grid(row=1, column=5)
+
+if OldDependentAppExist :
+    dependent_app_Entry.select()
+else:
+    dependent_app_Entry.deselect()
 
 for widget in System_Frame.winfo_children():
     widget.grid_configure(padx=10, pady=10)
@@ -167,7 +193,7 @@ else:
 
 NewEmailBoolAfter = Tk.StringVar()
 Sent_After_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email po nasazení.",
-                                  variable=NewEmailBoolAfter, onvalue="true", offvalue="false")
+                                  variable=NewEmailBoolAfter,onvalue="true", offvalue="false")
 Sent_After_entry.grid(row=0, column=2)
 
 if OldEmailBoolAfter :
@@ -204,7 +230,7 @@ OldEmailTo = Tk.Label(Email_Frame, text="Seznam příjemců")
 OldEmailTo.grid(row=6, column=1, sticky='we')
 Email_to_Entry = scrolledtext.ScrolledText(Email_Frame,
                                       wrap = Tk.WORD,
-                                      width = 170,
+                                      width = 120,
                                       height = 1,
                                       font = ("Times New Roman",
                                               10))
@@ -214,16 +240,16 @@ Email_to_Entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3)
 
 OldString8.set(OldSubject)
 SubjectLbl = Tk.Label(Email_Frame, text="Předmět mailu")
-SubjectLbl.grid(row=4, column=0, sticky='nsew', padx = 10, pady=10, columnspan= 170)
+SubjectLbl.grid(row=4, column=0, sticky='nsew', padx = 10, pady=10, columnspan= 120)
 Subject_entry = Tk.Entry(Email_Frame,textvariable = OldString8)
-Subject_entry.grid(row=5, column=0,sticky='nsew', padx = 10, pady=10, columnspan= 170)
+Subject_entry.grid(row=5, column=0,sticky='nsew', padx = 10, pady=10, columnspan= 120)
 
 OldString9.set(OldBody)
 OldBody = Tk.Label(Email_Frame, text="Tělo Mailu")
 OldBody.grid(row=8, column=1, sticky='we')
 Body_entry = scrolledtext.ScrolledText(Email_Frame,
                                       wrap = Tk.WORD,
-                                      width = 170,
+                                      width = 120,
                                       height = 1,
                                       font = ("Times New Roman",
                                               10))
@@ -235,12 +261,12 @@ OldReleasedFeatures = Tk.Label(Email_Frame, text="Seznam Požadavků")
 OldReleasedFeatures.grid(row=10, column=1, sticky='we',rowspan=5)
 ReleasedFeatures_entry = scrolledtext.ScrolledText(Email_Frame,
                                       wrap = Tk.WORD,
-                                      width = 170,
+                                      width = 120,
                                       height = 1,
                                       font = ("Times New Roman",
                                               10))
 ReleasedFeatures_entry.insert(Tk.INSERT,OldString10.get())
-ReleasedFeatures_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3,rowspan=5)
+ReleasedFeatures_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=13,rowspan=5)
 
 # tlačítka a akce
 button1 = Tk.Button(frame, text="Uložit JSON", command= enter_data)
@@ -257,6 +283,9 @@ button3.grid(row=22, column=0, sticky="news", padx=20, pady=10)
 
 button5 = Tk.Button(frame, text="Spustit release hned ", command=  lambda : RunTaskNow("C:\\NTC\\ReleaseAndNotificationNow.ps1"))
 button5.grid(row=24, column=0, sticky="news", padx=20, pady=10)
+
+# button6 = Tk.Button(frame, text="Beep", command=  lambda : run_powershell_script("C:\\SCRIPTS\\BEEP.ps1"))
+# button6.grid(row=26, column=0, sticky="news", padx=20, pady=10)
 
 
 window.mainloop()
