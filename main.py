@@ -2,290 +2,258 @@ import json
 import subprocess
 import ctypes
 import tkinter as Tk
-from tkinter import ttk
-from tkinter import scrolledtext
-#Import modulů
+from tkinter import ttk, scrolledtext, messagebox
+from pathlib import Path
+import os
 
-#definice akcí
+# Definice akcí
 def run_powershell_script(script_path):
     try:
-        # Construct the command to run the PowerShell script
         command = ["pwsh", "-File", script_path]
-        
-        # Execute the command
         result = subprocess.run(command, capture_output=True, text=True, check=True)
-        
-        # Return the output and error (if any)
         return result.stdout, result.stderr
     except subprocess.CalledProcessError as e:
         return e.stdout, e.stderr
-    
-def OpenJson(Path):
-    subprocess.call(['notepad.exe', Path])
-    
-def UnscheduleTask(command):
-    result = ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", "powershell", command, None, 0)
-    if result <= 32:
-        raise Exception("Failed to run as admin")
-def RunTaskNow(command):
-    result = ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", "powershell", command, None, 0)
+
+def open_json(path):
+    subprocess.call(['notepad.exe', path])
+
+def execute_as_admin(command):
+    result = ctypes.windll.shell32.ShellExecuteW(None, "runas", "powershell", command, None, 0)
     if result <= 32:
         raise Exception("Failed to run as admin")
 
+def unschedule_task(command):
+    execute_as_admin(command)
 
-def ScheduleTask(command):
-    result = ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", "powershell", command, None, 0)
-    if result <= 32:
-        raise Exception("Failed to run as admin")
+def run_task_now(command):
+    execute_as_admin(command)
 
-#Uložení dat do jsonu
+def schedule_task(command):
+    execute_as_admin(command)
+
+def load_json(path):
+    if not path.exists():
+        # Pokud soubor neexistuje, vytvoříme nový s výchozími hodnotami
+        default_content = {
+            '$TaskName': '',
+            '$TaskTime': '',
+            '$ReleasedFeatures': '',
+            '$EmailFrom': '',
+            '$EmailFromPW': '',
+            '$EmailTo': '',
+            '$Subject': '',
+            '$SubjectFinish': '',
+            '$Body': '',
+            '$BodyFinish': '',
+            '$DeploymentInstance': '',
+            '$SentEmailBefore': False,
+            '$SentEmailAfter': False,
+            '$UserID': '',
+            '$SendEmailToMyself': False,
+            '$DependentAppExist': False
+        }
+        save_json(path, default_content)
+        return default_content
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        # Pokud je soubor prázdný nebo neplatný JSON, vrátíme prázdný slovník
+        return {}
+
+def save_json(path, content):
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(content, f, indent=4)
+
 def enter_data():
-    Instance = Deployment_Instance_entry.get()
-    TaskTime = task_time_entry.get()
-    UserID = user_id_entry.get()
-    TaskName = TaskName_entry.get()
-    BoolDependentAppExist = Newdependent_app_exist.get()
+    instance = Deployment_Instance_entry.get()
+    task_time = task_time_entry.get()
+    user_id = user_id_entry.get()
+    task_name = TaskName_entry.get()
+    dependent_app_exist = Newdependent_app_exist.get()
 
-    EmailBoolBeforestr = NewEmailBoolBefore.get() in ("true", "False")
-    EmailBoolAfterstr = NewEmailBoolAfter.get() in ("true", "False")
+    email_bool_before = NewEmailBoolBefore.get() in ("true", "False")
+    email_bool_after = NewEmailBoolAfter.get() in ("true", "False")
 
-    EmailFrom = Email_From_entry.get()
-    EmailFromPW = AplicationPW_Entry.get()
-    EmailTo = Email_to_Entry.get("1.0",'end-1c')
-    SendEmailToMyself = NewSendEmailToMyself.get() in ("true", "False")
+    email_from = Email_From_entry.get()
+    email_from_pw = AplicationPW_Entry.get()
+    email_to = Email_to_Entry.get("1.0", 'end-1c')
+    send_email_to_myself = NewSendEmailToMyself.get() in ("true", "False")
 
+    subject = Subject_entry.get()
+    body = Body_entry.get("1.0", 'end')
+    released_features = ReleasedFeatures_entry.get("1.0", 'end-1c')
 
-    Subject = Subject_entry.get()
-    Body = Body_entry.get("1.0",'end')
-    ReleasedFeatures = ReleasedFeatures_entry.get("1.0",'end-1c')
+    if instance and task_time:
+        path_to_json = Path(r'C:\NTC\Settings.JSON')
+        json_content = load_json(path_to_json)
+        
+        json_content.update({
+            '$DeploymentInstance': instance,
+            '$TaskTime': task_time,
+            '$UserID': user_id,
+            '$TaskName': task_name,
+            '$DependentAppExist': int(dependent_app_exist),
+            '$SentEmailBefore': email_bool_before,
+            '$SentEmailAfter': email_bool_after,
+            '$EmailFrom': email_from,
+            '$EmailFromPW': email_from_pw,
+            '$EmailTo': email_to,
+            '$SendEmailToMyself': send_email_to_myself,
+            '$Subject': subject,
+            '$Body': body,
+            '$ReleasedFeatures': released_features
+        })
 
-    if Instance and TaskTime:
-        PATH_TO_JSON: str = r'C:\NTC\Settings.JSON'
-        with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
-         json_content = json.load(f)
-         json_content['$DeploymentInstance'] = Instance
-         json_content['$TaskTime'] = TaskTime
-         json_content['$UserID'] = UserID
-         json_content['$TaskName'] = TaskName
-         json_content['$DependentAppExist'] = int(BoolDependentAppExist)
-
-         json_content['$SentEmailBefore'] =  EmailBoolBeforestr
-         json_content['$SentEmailAfter'] = EmailBoolAfterstr
-
-         json_content['$EmailFrom'] = EmailFrom
-         json_content['$EmailFromPW'] = EmailFromPW
-         json_content['$EmailTo'] = EmailTo
-         json_content['$SendEmailToMyself'] = SendEmailToMyself
-
-         json_content['$Subject'] = Subject
-         json_content['$Body'] = Body
-         json_content['$ReleasedFeatures'] = ReleasedFeatures
-
-        with open(PATH_TO_JSON, 'w') as f:
-            json.dump(json_content, f, indent=4)
-
+        save_json(path_to_json, json_content)
     else:
-        Tk.messagebox.showwarning(title="Error", message="Instance a čas jsou povinné údaje.")
-
-
+        messagebox.showwarning(title="Error", message="Instance a čas jsou povinné údaje.")
 
 window = Tk.Tk()
 window.title("Nastavení parametrů releasu")
 
-#Načtení dat  do proměných z JSONu
+# Nastavení ikony okna
+# window.iconbitmap(os.path.join(os.path.dirname(__file__), 'path_to_your_icon.ico'))
 
-PATH_TO_JSON: str = r'C:\NTC\Settings.JSON'
-with open(PATH_TO_JSON, 'r', encoding='utf-8') as f:
-    json_content = json.load(f)
+# Načtení dat do proměnných z JSONu
+path_to_json = Path(r'C:\NTC\Settings.JSON')
+json_content = load_json(path_to_json)
 
-    OldTaskName = json_content['$TaskName']
-    OldTaskTime =   json_content['$TaskTime']
-    OldReleasedFeatures =   json_content['$ReleasedFeatures']
-    OldEmailFrom : str =   json_content['$EmailFrom']
-    OldEmailFromPW : str =   json_content['$EmailFromPW']
-    OldEmailTo : str =   json_content['$EmailTo']
-    OldSubject : str =   json_content['$Subject']
-    OldSubjectFinish : str =   json_content['$SubjectFinish']
-    OldBody : str =   json_content['$Body']
-    OldBodyFinish : str =   json_content['$BodyFinish']
-    OldDeploymentInstance = json_content['$DeploymentInstance']
-    OldEmailBoolBefore : str =   json_content['$SentEmailBefore'] 
-    OldEmailBoolAfter : str =   json_content['$SentEmailAfter'] 
-    OldUserID : str =   json_content['$UserID']
-    OldSendEmailToMyself : str =   json_content['$SendEmailToMyself'] 
-    OldDependentAppExist : str =   json_content['$DependentAppExist'] 
+old_task_name = json_content['$TaskName']
+old_task_time = json_content['$TaskTime']
+old_released_features = json_content['$ReleasedFeatures']
+old_email_from = json_content['$EmailFrom']
+old_email_from_pw = json_content['$EmailFromPW']
+old_email_to = json_content['$EmailTo']
+old_subject = json_content['$Subject']
+old_subject_finish = json_content['$SubjectFinish']
+old_body = json_content['$Body']
+old_body_finish = json_content['$BodyFinish']
+old_deployment_instance = json_content['$DeploymentInstance']
+old_email_bool_before = json_content['$SentEmailBefore']
+old_email_bool_after = json_content['$SentEmailAfter']
+old_user_id = json_content['$UserID']
+old_send_email_to_myself = json_content['$SendEmailToMyself']
+old_dependent_app_exist = json_content['$DependentAppExist']
 
+# Vytvoření okna prostředí
+frame = ttk.Frame(window)
+frame.pack(padx=20, pady=20, fill="both", expand=True)
 
-#vytvoření okno prostředí
-frame = Tk.Frame(window)
-frame.pack()
-#definice proměnných
-OldString1 = Tk.StringVar()
-Oldstring2 = Tk.StringVar()
-OldString3 = Tk.StringVar()
-OldString4 = Tk.StringVar()
-OldString5 = Tk.StringVar()
-OldString6 = Tk.StringVar()
-OldString7 = Tk.StringVar()
-OldString8 = Tk.StringVar()
-OldString9 = Tk.StringVar()
-OldString10 = Tk.StringVar()
-OldString11 = Tk.StringVar()
+# Definice proměnných
+old_string1 = Tk.StringVar(value=old_deployment_instance)
+old_string2 = Tk.StringVar(value=old_task_time)
+old_string3 = Tk.StringVar(value=old_user_id)
+old_string4 = Tk.StringVar(value=old_email_from)
+old_string5 = Tk.StringVar(value=old_email_from_pw)
+old_string6 = Tk.StringVar(value=old_task_name)
+old_string7 = Tk.StringVar(value=old_email_to)
+old_string8 = Tk.StringVar(value=old_subject)
+old_string9 = Tk.StringVar(value=old_body)
+old_string10 = Tk.StringVar(value=old_released_features)
 
 # Nastavení releaseu
-System_Frame =Tk.LabelFrame(frame, text="Release nastavení")
-System_Frame.grid(row= 0, column=0, padx=20, pady=10)
+system_frame = ttk.LabelFrame(frame, text="Release nastavení")
+system_frame.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
 
+ttk.Label(system_frame, text="Deployment Instance").grid(row=0, column=0, sticky="w")
+Deployment_Instance_entry = ttk.Entry(system_frame, textvariable=old_string1)
+Deployment_Instance_entry.grid(row=1, column=0, sticky="ew")
 
-OldString1.set(OldDeploymentInstance)
-Deployment_Instance = Tk.Label(System_Frame, text="Deployment Instance")
-Deployment_Instance.grid(row=0, column=0)
-Deployment_Instance_entry = ttk.Entry(System_Frame,textvariable = OldString1)
-Deployment_Instance_entry.grid(row=1, column=0)
+ttk.Label(system_frame, text="Čas spuštění").grid(row=0, column=1, sticky="w")
+task_time_entry = ttk.Entry(system_frame, textvariable=old_string2)
+task_time_entry.grid(row=1, column=1, sticky="ew")
 
-Oldstring2.set(OldTaskTime)
-TaskTimeLbl = Tk.Label(System_Frame, text="Čas spuštění")
-TaskTimeLbl.grid(row=0, column=1)
-task_time_entry = Tk.Entry(System_Frame,textvariable = Oldstring2)
-task_time_entry.grid(row=1, column=1)
+ttk.Label(system_frame, text="USER ID").grid(row=0, column=2, sticky="w")
+user_id_entry = ttk.Entry(system_frame, textvariable=old_string3)
+user_id_entry.grid(row=1, column=2, sticky="ew")
 
-OldString3.set(OldUserID)
-UserIDLbl = Tk.Label(System_Frame, text="USER ID")
-UserIDLbl.grid(row=0, column=2)
-user_id_entry = Tk.Entry(System_Frame,textvariable = OldString3)
-user_id_entry.grid(row=1, column=2)
+ttk.Label(system_frame, text="Název tasku").grid(row=0, column=3, sticky="w")
+TaskName_entry = ttk.Entry(system_frame, textvariable=old_string6)
+TaskName_entry.grid(row=1, column=3, sticky="ew")
 
-OldString6.set(OldTaskName)
-TaskNameLbl = Tk.Label(System_Frame, text="Název tasku")
-TaskNameLbl.grid(row=0, column=3)
-TaskName_entry = Tk.Entry(System_Frame,textvariable = OldString6)
-TaskName_entry.grid(row=1, column=3)
+Newdependent_app_exist = Tk.BooleanVar(value=old_dependent_app_exist)
+dependent_app_entry = ttk.Checkbutton(system_frame, text="Závislá aplikace", variable=Newdependent_app_exist, onvalue=True, offvalue=False)
+dependent_app_entry.grid(row=1, column=4, sticky="w")
 
-Newdependent_app_exist = Tk.BooleanVar()
-dependent_app_Entry = Tk.Checkbutton(System_Frame, text= "Závislá aplikace",
-                                  variable=Newdependent_app_exist, onvalue=True, offvalue=False,command=enter_data)
-dependent_app_Entry.grid(row=1, column=5)
-
-if OldDependentAppExist :
-    dependent_app_Entry.select()
-else:
-    dependent_app_Entry.deselect()
-
-for widget in System_Frame.winfo_children():
-    widget.grid_configure(padx=10, pady=10)
+for widget in system_frame.winfo_children():
+    widget.grid_configure(padx=10, pady=5)
 
 # Nastavení Email
-Email_Frame = Tk.LabelFrame(frame, text="Nastavení emailů k releasu")
-Email_Frame.grid(row=2, column=0, padx=20, pady=15)
+email_frame = ttk.LabelFrame(frame, text="Nastavení emailů k releasu")
+email_frame.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
 
-NewEmailBoolBefore = Tk.StringVar()
-Sent_before_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email před nasazením.",
-                                  variable=NewEmailBoolBefore, onvalue="true", offvalue="false")
-Sent_before_entry.grid(row=0, column=0)
+NewEmailBoolBefore = Tk.StringVar(value=old_email_bool_before)
+ttk.Checkbutton(email_frame, text="Odeslat email před nasazením.", variable=NewEmailBoolBefore, onvalue="true", offvalue="false").grid(row=0, column=0, sticky="w")
 
-if OldEmailBoolBefore :
-    Sent_before_entry.select()
-else:
-    Sent_before_entry.deselect()
+NewEmailBoolAfter = Tk.StringVar(value=old_email_bool_after)
+ttk.Checkbutton(email_frame, text="Odeslat email po nasazení.", variable=NewEmailBoolAfter, onvalue="true", offvalue="false").grid(row=0, column=1, sticky="w")
 
-NewEmailBoolAfter = Tk.StringVar()
-Sent_After_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat email po nasazení.",
-                                  variable=NewEmailBoolAfter,onvalue="true", offvalue="false")
-Sent_After_entry.grid(row=0, column=2)
+ttk.Label(email_frame, text="Odesilatel Mailu").grid(row=1, column=0, sticky="w")
+Email_From_entry = ttk.Combobox(email_frame, values=["jakub.soucek@navitec.cz", "daniel.barnet@navitec.cz"], textvariable=old_string4)
+Email_From_entry.grid(row=2, column=0, sticky="ew")
 
-if OldEmailBoolAfter :
-    Sent_After_entry.select()
-else:
-    Sent_After_entry.deselect()
+ttk.Label(email_frame, text="Aplikační heslo Mailu").grid(row=1, column=1, sticky="w")
+AplicationPW_Entry = ttk.Entry(email_frame, show="*", textvariable=old_string5)
+AplicationPW_Entry.grid(row=2, column=1, sticky="ew")
 
+NewSendEmailToMyself = Tk.StringVar(value=old_send_email_to_myself)
+ttk.Checkbutton(email_frame, text="Odeslat emaily jen sobě", variable=NewSendEmailToMyself, onvalue="true", offvalue="false").grid(row=2, column=2, sticky="w")
 
-OldString4.set(OldEmailFrom)
-EmailFromLbl = Tk.Label(Email_Frame, text="Odesilatel Mailu")
-Email_From_entry = ttk.Combobox(Email_Frame, values=["jakub.soucek@navitec.cz", "daniel.barnet@navitec.cz"],textvariable = OldString4)
-EmailFromLbl.grid(row=2, column=0)
-Email_From_entry.grid(row=3, column=0)
+ttk.Label(email_frame, text="Seznam příjemců").grid(row=3, column=0, columnspan=3, sticky="w")
+Email_to_Entry = scrolledtext.ScrolledText(email_frame, wrap=Tk.WORD, width=80, height=4, font=("Times New Roman", 10))
+Email_to_Entry.insert(Tk.INSERT, old_string7.get())
+Email_to_Entry.grid(row=4, column=0, columnspan=3, pady=10, padx=10, sticky="ew")
 
-OldString5.set(OldEmailFromPW)
-AplicationPW = Tk.Label(Email_Frame, text="Aplikační heslo Mailu")
-AplicationPW_Entry = Tk.Entry(Email_Frame, show="*", textvariable = OldString5)
-AplicationPW.grid(row=2, column=1)
-AplicationPW_Entry.grid(row=3, column=1)
+ttk.Label(email_frame, text="Předmět mailu").grid(row=5, column=0, columnspan=3, sticky="w")
+Subject_entry = ttk.Entry(email_frame, textvariable=old_string8)
+Subject_entry.grid(row=6, column=0, columnspan=3, pady=10, padx=10, sticky="ew")
 
+ttk.Label(email_frame, text="Tělo Mailu").grid(row=7, column=0, columnspan=3, sticky="w")
+Body_entry = scrolledtext.ScrolledText(email_frame, wrap=Tk.WORD, width=80, height=4, font=("Times New Roman", 10))
+Body_entry.insert(Tk.INSERT, old_string9.get())
+Body_entry.grid(row=8, column=0, columnspan=3, pady=10, padx=10, sticky="ew")
 
-NewSendEmailToMyself = Tk.StringVar()
-SendEmailToMyself_entry = Tk.Checkbutton(Email_Frame, text= "Odeslat emaily jen sobě",
-                                  variable=NewSendEmailToMyself, onvalue="true", offvalue="false")
-SendEmailToMyself_entry.grid(row=3, column=2)
+ttk.Label(email_frame, text="Seznam Požadavků").grid(row=9, column=0, columnspan=3, sticky="w")
+ReleasedFeatures_entry = scrolledtext.ScrolledText(email_frame, wrap=Tk.WORD, width=80, height=4, font=("Times New Roman", 10))
+ReleasedFeatures_entry.insert(Tk.INSERT, old_string10.get())
+ReleasedFeatures_entry.grid(row=10, column=0, columnspan=3, pady=10, padx=10, sticky="ew")
 
-if OldSendEmailToMyself  :
-    SendEmailToMyself_entry.select()
-else:
-    SendEmailToMyself_entry.deselect()
+for widget in email_frame.winfo_children():
+    widget.grid_configure(padx=10, pady=5)
 
-OldString7.set(OldEmailTo)
-OldEmailTo = Tk.Label(Email_Frame, text="Seznam příjemců")
-OldEmailTo.grid(row=6, column=1, sticky='we')
-Email_to_Entry = scrolledtext.ScrolledText(Email_Frame,
-                                      wrap = Tk.WORD,
-                                      width = 120,
-                                      height = 1,
-                                      font = ("Times New Roman",
-                                              10))
-Email_to_Entry.insert(Tk.INSERT,OldString7.get())
-Email_to_Entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3)
+# Tlačítka a akce
+button_frame = ttk.Frame(frame)
+button_frame.grid(row=2, column=0, pady=20, sticky="ew")
 
+ttk.Button(button_frame, text="Uložit JSON", command=enter_data).grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+ttk.Button(button_frame, text="Otevři JSON", command=lambda: open_json("C:\\NTC\\Settings.json")).grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+ttk.Button(button_frame, text="Spustit timer", command=lambda: schedule_task("C:\\NTC\\ScheduledTaskRealease.ps1")).grid(row=0, column=2, padx=10, pady=10, sticky="ew")
+ttk.Button(button_frame, text="Zrušit timer", command=lambda: unschedule_task("C:\\NTC\\UnscheduleTask.ps1")).grid(row=0, column=3, padx=10, pady=10, sticky="ew")
+ttk.Button(button_frame, text="Spustit release hned", command=lambda: run_task_now("C:\\NTC\\ReleaseAndNotificationNow.ps1")).grid(row=0, column=4, padx=10, pady=10, sticky="ew")
 
-OldString8.set(OldSubject)
-SubjectLbl = Tk.Label(Email_Frame, text="Předmět mailu")
-SubjectLbl.grid(row=4, column=0, sticky='nsew', padx = 10, pady=10, columnspan= 120)
-Subject_entry = Tk.Entry(Email_Frame,textvariable = OldString8)
-Subject_entry.grid(row=5, column=0,sticky='nsew', padx = 10, pady=10, columnspan= 120)
+for widget in button_frame.winfo_children():
+    widget.grid_configure(padx=10, pady=5)
 
-OldString9.set(OldBody)
-OldBody = Tk.Label(Email_Frame, text="Tělo Mailu")
-OldBody.grid(row=8, column=1, sticky='we')
-Body_entry = scrolledtext.ScrolledText(Email_Frame,
-                                      wrap = Tk.WORD,
-                                      width = 120,
-                                      height = 1,
-                                      font = ("Times New Roman",
-                                              10))
-Body_entry.insert(Tk.INSERT,OldString9.get())
-Body_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=3)
-
-OldString10.set(OldReleasedFeatures)
-OldReleasedFeatures = Tk.Label(Email_Frame, text="Seznam Požadavků")
-OldReleasedFeatures.grid(row=10, column=1, sticky='we',rowspan=5)
-ReleasedFeatures_entry = scrolledtext.ScrolledText(Email_Frame,
-                                      wrap = Tk.WORD,
-                                      width = 120,
-                                      height = 1,
-                                      font = ("Times New Roman",
-                                              10))
-ReleasedFeatures_entry.insert(Tk.INSERT,OldString10.get())
-ReleasedFeatures_entry.grid(column = 0, pady = 10, padx = 10, sticky='w',columnspan=13,rowspan=5)
-
-# tlačítka a akce
-button1 = Tk.Button(frame, text="Uložit JSON", command= enter_data)
-button1.grid(row=16, column=0, sticky="news", padx=20, pady=10)
-
-button4 = Tk.Button(frame, text="Otevři JSON", command=  lambda : OpenJson("C:\\NTC\\Settings.json"))
-button4.grid(row=18, column=0, sticky="news", padx=20, pady=10)
-
-button2 = Tk.Button(frame, text="Spustit timer ", command= lambda : ScheduleTask("C:\\NTC\\ScheduledTaskRealease.ps1"))
-button2.grid(row=20, column=0, sticky="news", padx=20, pady=10)
-
-button3 = Tk.Button(frame, text="Zrušit timer ", command=  lambda : UnscheduleTask("C:\\NTC\\UnscheduleTask.ps1"))
-button3.grid(row=22, column=0, sticky="news", padx=20, pady=10)
-
-button5 = Tk.Button(frame, text="Spustit release hned ", command=  lambda : RunTaskNow("C:\\NTC\\ReleaseAndNotificationNow.ps1"))
-button5.grid(row=24, column=0, sticky="news", padx=20, pady=10)
-
-# button6 = Tk.Button(frame, text="Beep", command=  lambda : run_powershell_script("C:\\SCRIPTS\\BEEP.ps1"))
-# button6.grid(row=26, column=0, sticky="news", padx=20, pady=10)
-
+# Nastavení dynamického zvětšování a zmenšování
+window.grid_rowconfigure(0, weight=1)
+window.grid_columnconfigure(0, weight=1)
+frame.grid_rowconfigure(0, weight=1)
+frame.grid_columnconfigure(0, weight=1)
+system_frame.grid_columnconfigure(0, weight=1)
+system_frame.grid_columnconfigure(1, weight=1)
+system_frame.grid_columnconfigure(2, weight=1)
+system_frame.grid_columnconfigure(3, weight=1)
+system_frame.grid_columnconfigure(4, weight=1)
+email_frame.grid_columnconfigure(0, weight=1)
+email_frame.grid_columnconfigure(1, weight=1)
+email_frame.grid_columnconfigure(2, weight=1)
+email_frame.grid_columnconfigure(3, weight=1)
+button_frame.grid_columnconfigure(0, weight=1)
+button_frame.grid_columnconfigure(1, weight=1)
+button_frame.grid_columnconfigure(2, weight=1)
+button_frame.grid_columnconfigure(3, weight=1)
+button_frame.grid_columnconfigure(4, weight=1)
 
 window.mainloop()
